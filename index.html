@@ -188,104 +188,57 @@ ATL:'Atlanta Falcons',CAR:'Carolina Panthers',NO:'New Orleans Saints',TB:'Tampa 
 SF:'San Francisco 49ers',SEA:'Seattle Seahawks',LAR:'Los Angeles Rams',ARI:'Arizona Cardinals'
 };
 
-const divisions = {
-"AFC East":["BUF","MIA","NE","NYJ"],
-"AFC North":["BAL","CIN","CLE","PIT"],
-"AFC South":["HOU","IND","JAX","TEN"],
-"AFC West":["KC","DEN","LV","LAC"],
-"NFC East":["DAL","PHI","NYG","WSH"],
-"NFC North":["DET","GB","CHI","MIN"],
-"NFC South":["ATL","CAR","NO","TB"],
-"NFC West":["SF","SEA","LAR","ARI"]
-};
-
-function buildTeams(){
-
-const container=document.getElementById("teams");
-
-Object.entries(divisions).forEach(([division,teams])=>{
-
-const section=document.createElement("div");
-section.className="division-section";
-
-section.innerHTML=`
-<div class="division-header">
-<div class="division-bar" style="background:#3b82f6"></div>
-<span class="division-title">${division}</span>
-</div>
-<div class="team-grid">
-${teams.map(t=>`
-<div class="team-card">
-<div class="team-label">
-<span class="team-name">${TEAM_NAMES[t]}</span>
-<span class="team-abbr">${t}</span>
-</div>
-<div class="news-feed" id="feed-${t}">
-<div class="feed-loading">Loading...</div>
-</div>
-</div>
-`).join("")}
-</div>`;
-
-container.appendChild(section);
-
-});
-
-}
-
-async function fetchNews(team){
-
-const rss=`https://news.google.com/rss/search?q=${encodeURIComponent(team+" NFL")}`;
-const url=`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
-
-const response=await fetch(url);
-const data=await response.json();
-
-if(!data.items) return [];
-
-return data.items.slice(0,6).map(item=>({
-title:item.title,
-url:item.link,
-source:item.author||"News",
-date:new Date(item.pubDate).toLocaleDateString()
-}));
-
-}
-
 async function loadFeed(abbr){
 
-const el=document.getElementById(`feed-${abbr}`);
+const team = TEAM_NAMES[abbr];
+const container = document.getElementById(`feed-${abbr}`);
 
 try{
 
-const items=await fetchNews(TEAM_NAMES[abbr]);
+const url = `https://api.allorigins.win/raw?url=https://news.google.com/rss/search?q=${encodeURIComponent(team+" NFL")}&hl=en-US&gl=US&ceid=US:en`;
 
-el.innerHTML=items.map(n=>`
-<a class="news-item" href="${n.url}" target="_blank">
-<div class="news-title">${n.title}</div>
-<div class="news-meta">${n.source} • ${n.date}</div>
+const res = await fetch(url);
+const text = await res.text();
+
+const parser = new DOMParser();
+const xml = parser.parseFromString(text,"text/xml");
+
+const items = [...xml.querySelectorAll("item")].slice(0,6);
+
+container.innerHTML = items.map(item=>{
+
+const title = item.querySelector("title")?.textContent || "";
+const link = item.querySelector("link")?.textContent || "";
+
+return `
+<a class="news-item" href="${link}" target="_blank">
+<span class="news-title">${title}</span>
+<span class="news-meta">
+<span class="news-source">Google News</span>
+</span>
 </a>
-`).join("");
+`;
 
-}catch{
+}).join("");
 
-el.innerHTML="<div class='feed-loading'>Could not load news</div>";
+}
+catch(e){
+
+container.innerHTML=`<div class="feed-error">News unavailable</div>`;
 
 }
 
 }
 
-async function loadAll(){
+function loadAll(){
 
-for(const abbr in TEAM_NAMES){
-loadFeed(abbr);
-}
+Object.keys(TEAM_NAMES).forEach(loadFeed);
 
 }
 
-buildTeams();
 loadAll();
-setInterval(loadAll,600000);
+
+setInterval(loadAll, 1800000);
 
 </script>
 

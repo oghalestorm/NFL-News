@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFL 2026 Ultimate Live Hub</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+--bg:#05080f;
+--surface:#0c1120;
+--surface2:#111827;
+--border:#1e293b;
+--text:#e2e8f0;
+--muted:#475569;
+--accent:#3b82f6
+}
+
+body{
+background:var(--bg);
+color:var(--text);
+font-family:'Barlow',sans-serif;
+min-height:100vh;
+overflow-x:hidden
+}
+
+.container{max-width:1600px;margin:0 auto;padding:0 24px}
+
+header{
+padding:60px 0 48px;
+text-align:center
+}
+
+h1{
+font-family:'Bebas Neue',sans-serif;
+font-size:clamp(4rem,10vw,9rem);
+line-height:.9
+}
+
+.accent{color:var(--accent)}
+
+.header-sub{
+font-family:'Barlow Condensed';
+letter-spacing:.3em;
+color:var(--muted);
+margin-top:14px
+}
+
+.division-section{margin-top:50px}
+
+.division-header{
+display:flex;
+align-items:center;
+gap:12px;
+margin-bottom:20px;
+border-bottom:1px solid var(--border);
+padding-bottom:12px
+}
+
+.division-bar{
+width:6px;
+height:36px;
+border-radius:3px
+}
+
+.division-title{
+font-family:'Bebas Neue';
+font-size:2rem
+}
+
+.team-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:16px
+}
+
+@media(max-width:1100px){
+.team-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:600px){
+.team-grid{grid-template-columns:1fr}
+}
+
+.team-card{
+background:var(--surface);
+border-radius:10px;
+overflow:hidden;
+border:1px solid var(--border);
+border-top-width:4px;
+display:flex;
+flex-direction:column
+}
+
+.team-label{
+padding:10px 14px;
+display:flex;
+justify-content:space-between;
+border-bottom:1px solid var(--border)
+}
+
+.team-name{
+font-family:'Bebas Neue';
+font-size:1.1rem
+}
+
+.team-abbr{
+font-size:.7rem;
+letter-spacing:.2em;
+color:var(--muted)
+}
+
+.news-feed{
+max-height:340px;
+overflow-y:auto
+}
+
+.news-item{
+display:block;
+padding:10px 14px;
+border-bottom:1px solid rgba(255,255,255,.05);
+text-decoration:none;
+color:var(--text)
+}
+
+.news-item:hover{
+background:rgba(255,255,255,.05)
+}
+
+.news-title{
+font-family:'Barlow Condensed';
+font-weight:700;
+font-size:.9rem
+}
+
+.news-meta{
+font-size:.7rem;
+color:var(--muted)
+}
+
+.feed-loading{
+padding:20px;
+text-align:center;
+font-size:.8rem;
+color:var(--muted)
+}
+
+footer{
+margin-top:80px;
+padding:32px 0;
+border-top:1px solid var(--border);
+text-align:center;
+font-size:.8rem;
+color:var(--muted)
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+<h1>NFL <span class="accent">LIVE</span><br>2026</h1>
+<p class="header-sub">All 32 Teams · Real-Time Divisional News</p>
+</header>
+
+<div id="teams"></div>
+
+<footer>NFL Hub 2026 • Live News • Powered by Google News</footer>
+
+</div>
+
+<script>
+
+const TEAM_NAMES = {
+BUF:'Buffalo Bills',MIA:'Miami Dolphins',NE:'New England Patriots',NYJ:'New York Jets',
+BAL:'Baltimore Ravens',CIN:'Cincinnati Bengals',CLE:'Cleveland Browns',PIT:'Pittsburgh Steelers',
+HOU:'Houston Texans',IND:'Indianapolis Colts',JAX:'Jacksonville Jaguars',TEN:'Tennessee Titans',
+KC:'Kansas City Chiefs',DEN:'Denver Broncos',LV:'Las Vegas Raiders',LAC:'Los Angeles Chargers',
+DAL:'Dallas Cowboys',PHI:'Philadelphia Eagles',NYG:'New York Giants',WSH:'Washington Commanders',
+DET:'Detroit Lions',GB:'Green Bay Packers',CHI:'Chicago Bears',MIN:'Minnesota Vikings',
+ATL:'Atlanta Falcons',CAR:'Carolina Panthers',NO:'New Orleans Saints',TB:'Tampa Bay Buccaneers',
+SF:'San Francisco 49ers',SEA:'Seattle Seahawks',LAR:'Los Angeles Rams',ARI:'Arizona Cardinals'
+};
+
+const divisions = {
+"AFC East":["BUF","MIA","NE","NYJ"],
+"AFC North":["BAL","CIN","CLE","PIT"],
+"AFC South":["HOU","IND","JAX","TEN"],
+"AFC West":["KC","DEN","LV","LAC"],
+"NFC East":["DAL","PHI","NYG","WSH"],
+"NFC North":["DET","GB","CHI","MIN"],
+"NFC South":["ATL","CAR","NO","TB"],
+"NFC West":["SF","SEA","LAR","ARI"]
+};
+
+function buildTeams(){
+
+const container=document.getElementById("teams");
+
+Object.entries(divisions).forEach(([division,teams])=>{
+
+const section=document.createElement("div");
+section.className="division-section";
+
+section.innerHTML=`
+<div class="division-header">
+<div class="division-bar" style="background:#3b82f6"></div>
+<span class="division-title">${division}</span>
+</div>
+<div class="team-grid">
+${teams.map(t=>`
+<div class="team-card">
+<div class="team-label">
+<span class="team-name">${TEAM_NAMES[t]}</span>
+<span class="team-abbr">${t}</span>
+</div>
+<div class="news-feed" id="feed-${t}">
+<div class="feed-loading">Loading...</div>
+</div>
+</div>
+`).join("")}
+</div>`;
+
+container.appendChild(section);
+
+});
+
+}
+
+async function fetchNews(team){
+
+const rss=`https://news.google.com/rss/search?q=${encodeURIComponent(team+" NFL")}`;
+const url=`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
+
+const response=await fetch(url);
+const data=await response.json();
+
+if(!data.items) return [];
+
+return data.items.slice(0,6).map(item=>({
+title:item.title,
+url:item.link,
+source:item.author||"News",
+date:new Date(item.pubDate).toLocaleDateString()
+}));
+
+}
+
+async function loadFeed(abbr){
+
+const el=document.getElementById(`feed-${abbr}`);
+
+try{
+
+const items=await fetchNews(TEAM_NAMES[abbr]);
+
+el.innerHTML=items.map(n=>`
+<a class="news-item" href="${n.url}" target="_blank">
+<div class="news-title">${n.title}</div>
+<div class="news-meta">${n.source} • ${n.date}</div>
+</a>
+`).join("");
+
+}catch{
+
+el.innerHTML="<div class='feed-loading'>Could not load news</div>";
+
+}
+
+}
+
+async function loadAll(){
+
+for(const abbr in TEAM_NAMES){
+loadFeed(abbr);
+}
+
+}
+
+buildTeams();
+loadAll();
+setInterval(loadAll,600000);
+
+</script>
+
+</body>
+</html>

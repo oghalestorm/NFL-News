@@ -183,9 +183,13 @@ const teamArticles = allNews.filter(article =>
 (article.Content && article.Content.toLowerCase().includes(keyword))
 );
 
-const teamNews = teamArticles[0];
+let teamNews;
 
-if(teamNews){
+if(teamArticles.length > 0){
+    teamNews = teamArticles[0];
+}else{
+    teamNews = allNews[0]; // fallback headline
+}
 
 card.innerHTML=`
 <h3>${teamNames[team]}</h3>

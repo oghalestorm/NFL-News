@@ -176,7 +176,7 @@ const card=document.createElement("div");
 card.className="team";
 card.style.borderTopColor=teamColors[team];
 
-const teamNews=allNews.find(article=>article.Teams && article.Teams.includes(team));
+const teamNews=allNews.find(article => article.Team === team);
 
 if(teamNews){
 

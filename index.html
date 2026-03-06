@@ -224,7 +224,7 @@ let article=null;
 
 for(const item of data){
 
-const text=(item.Title+" "+item.Content).toLowerCase();
+const text=((item.Title || "")+" "+(item.Content || "")).toLowerCase();
 
 if(teamKeywords[team].some(word=>text.includes(word))){
 article=item;
@@ -233,22 +233,24 @@ break;
 
 }
 
-if(article){
+/* fallback if keyword match not found */
+
+if(!article){
+article=data[0];
+}
 
 card.innerHTML=`
 <h3>${teamNames[team]}</h3>
 <a href="${article.Url}" target="_blank">${article.Title}</a>
-<p>${article.Content.substring(0,120)}...</p>
+<p>${article.Content ? article.Content.substring(0,120)+"..." : ""}</p>
 `;
 
 }else{
 
 card.innerHTML=`
 <h3>${teamNames[team]}</h3>
-<p>No team-specific news found.</p>
+<p>No news available.</p>
 `;
-
-}
 
 }
 card.innerHTML=`

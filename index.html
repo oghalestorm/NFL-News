@@ -9,8 +9,8 @@ body{
 font-family:Arial;
 background:#0f172a;
 color:white;
-text-align:center;
 margin:0;
+text-align:center;
 }
 
 h1{
@@ -23,27 +23,21 @@ font-size:14px;
 color:#cbd5f5;
 }
 
-/* Division sections */
-
 .division{
 margin:30px;
 padding:20px;
-border-radius:12px;
+border-radius:10px;
 }
 
 .division h2{
 margin-bottom:15px;
 }
 
-/* Grid for teams */
-
 .teams{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:15px;
 }
-
-/* Team cards */
 
 .team{
 background:#1e293b;
@@ -54,25 +48,15 @@ transition:0.2s;
 
 .team:hover{
 transform:translateY(-5px);
-box-shadow:0 6px 15px rgba(0,0,0,0.4);
-}
-
-.team h3{
-margin-bottom:8px;
-font-size:16px;
 }
 
 .team a{
 color:#60a5fa;
-text-decoration:none;
 font-weight:bold;
+text-decoration:none;
 }
 
-.team a:hover{
-text-decoration:underline;
-}
-
-/* Division colors */
+/* division colors */
 
 .afcEast{background:#1e3a8a;}
 .afcNorth{background:#7f1d1d;}
@@ -98,7 +82,7 @@ text-decoration:underline;
 
 const apiKey="1aac3916c7694b6c8a1773a059a4aaf5";
 
-/* Divisions */
+/* divisions */
 
 const divisions={
 "AFC East":["BUF","MIA","NE","NYJ"],
@@ -111,8 +95,6 @@ const divisions={
 "NFC South":["ATL","CAR","NO","TB"],
 "NFC West":["ARI","LAR","SF","SEA"]
 };
-
-/* Team names */
 
 const teamNames={
 ARI:"Arizona Cardinals",
@@ -155,37 +137,38 @@ async function loadNews(){
 
 dashboard.innerHTML="";
 
+/* build division layout first */
+
 for(const division in divisions){
 
 const section=document.createElement("div");
 
-/* add division color class */
-
 const className=division.replace(" ","");
 section.className="division "+className.charAt(0).toLowerCase()+className.slice(1);
 
-section.innerHTML=`<h2>${division}</h2><div class="teams"></div>`;
-
-const teamContainer=section.querySelector(".teams");
+section.innerHTML=`<h2>${division}</h2><div class="teams" id="${division.replace(" ","")}"></div>`;
 
 dashboard.appendChild(section);
 
+}
+
+/* load teams */
+
+for(const division in divisions){
+
 for(const team of divisions[division]){
+
+const container=document.getElementById(division.replace(" ",""));
 
 const card=document.createElement("div");
 card.className="team";
 
-card.innerHTML=`
-<h3>${teamNames[team]}</h3>
-<p>Loading...</p>
-`;
-
-teamContainer.appendChild(card);
+card.innerHTML=`<h3>${teamNames[team]}</h3><p>Loading...</p>`;
+container.appendChild(card);
 
 try{
 
 const response=await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/NewsByTeam/${team}?key=${apiKey}`);
-
 const data=await response.json();
 
 if(data && data.length>0){
@@ -209,7 +192,7 @@ card.innerHTML=`
 
 card.innerHTML=`
 <h3>${teamNames[team]}</h3>
-<p>Could not load news.</p>
+<p>Error loading news</p>
 `;
 
 }
@@ -224,7 +207,6 @@ document.getElementById("updateTime").innerText=
 }
 
 loadNews();
-
 setInterval(loadNews,1800000);
 
 </script>

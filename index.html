@@ -220,6 +220,37 @@ const data=await response.json();
 
 if(data && data.length>0){
 
+let article=null;
+
+for(const item of data){
+
+const text=(item.Title+" "+item.Content).toLowerCase();
+
+if(teamKeywords[team].some(word=>text.includes(word))){
+article=item;
+break;
+}
+
+}
+
+if(article){
+
+card.innerHTML=`
+<h3>${teamNames[team]}</h3>
+<a href="${article.Url}" target="_blank">${article.Title}</a>
+<p>${article.Content.substring(0,120)}...</p>
+`;
+
+}else{
+
+card.innerHTML=`
+<h3>${teamNames[team]}</h3>
+<p>No team-specific news found.</p>
+`;
+
+}
+
+}
 card.innerHTML=`
 <h3>${teamNames[team]}</h3>
 <a href="${data[0].Url}" target="_blank">${data[0].Title}</a>

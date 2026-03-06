@@ -176,11 +176,13 @@ const card=document.createElement("div");
 card.className="team";
 card.style.borderTopColor=teamColors[team];
 
-const keyword = teamNames[team].split(" ").pop().toLowerCase();
+const keyword = teamNames[team].toLowerCase();
 
 const teamArticles = allNews.filter(article =>
-(article.Title && article.Title.toLowerCase().includes(keyword)) ||
-(article.Content && article.Content.toLowerCase().includes(keyword))
+(article.Title && article.Title.toLowerCase().includes(teamNames[team].split(" ")[0].toLowerCase())) ||
+(article.Title && article.Title.toLowerCase().includes(teamNames[team].split(" ").pop().toLowerCase())) ||
+(article.Content && article.Content.toLowerCase().includes(teamNames[team].split(" ")[0].toLowerCase())) ||
+(article.Content && article.Content.toLowerCase().includes(teamNames[team].split(" ").pop().toLowerCase()))
 );
 
 let teamNews;

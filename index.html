@@ -187,22 +187,18 @@ let teamNews;
 
 if(teamArticles.length > 0){
     teamNews = teamArticles[0];
-}else{
-    teamNews = allNews[0]; // fallback headline
-}
 
-card.innerHTML=`
-<h3>${teamNames[team]}</h3>
-<a href="${teamNews.Url}" target="_blank">${teamNews.Title}</a>
-<p>${teamNews.Content.substring(0,120)}...</p>
-`;
-
+    card.innerHTML=`
+    <h3>${teamNames[team]}</h3>
+    <a href="${teamNews.Url}" target="_blank">${teamNews.Title}</a>
+    <p>${teamNews.Content ? teamNews.Content.substring(0,120) + "..." : ""}</p>
+    `;
 }else{
 
-card.innerHTML=`
-<h3>${teamNames[team]}</h3>
-<p>No recent headline.</p>
-`;
+    card.innerHTML=`
+    <h3>${teamNames[team]}</h3>
+    <p>No recent headline.</p>
+    `;
 
 }
 

@@ -239,19 +239,6 @@ if(!article){
 article=data[0];
 }
 
-card.innerHTML=`
-<h3>${teamNames[team]}</h3>
-<a href="${article.Url}" target="_blank">${article.Title}</a>
-<p>${article.Content ? article.Content.substring(0,120)+"..." : ""}</p>
-`;
-
-}else{
-
-card.innerHTML=`
-<h3>${teamNames[team]}</h3>
-<p>No news available.</p>
-`;
-
 }
 card.innerHTML=`
 <h3>${teamNames[team]}</h3>

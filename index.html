@@ -153,11 +153,6 @@ async function loadNews(){
 
 container.innerHTML="";
 
-/* pull league news once */
-
-const response=await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/News?key=${apiKey}`);
-const allNews=await response.json();
-
 for(const division in divisions){
 
 const divBlock=document.createElement("div");
@@ -176,35 +171,43 @@ const card=document.createElement("div");
 card.className="team";
 card.style.borderTopColor=teamColors[team];
 
-const keyword = teamNames[team].toLowerCase();
+card.innerHTML=`
+<h3>${teamNames[team]}</h3>
+<p>Loading...</p>
+`;
 
-const teamArticles = allNews.filter(article =>
-(article.Title && article.Title.toLowerCase().includes(teamNames[team].split(" ")[0].toLowerCase())) ||
-(article.Title && article.Title.toLowerCase().includes(teamNames[team].split(" ").pop().toLowerCase())) ||
-(article.Content && article.Content.toLowerCase().includes(teamNames[team].split(" ")[0].toLowerCase())) ||
-(article.Content && article.Content.toLowerCase().includes(teamNames[team].split(" ").pop().toLowerCase()))
-);
+grid.appendChild(card);
 
-let teamNews;
+try{
 
-if(teamArticles.length > 0){
-    teamNews = teamArticles[0];
+const response=await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/NewsByTeam/${team}?key=${apiKey}`);
+const data=await response.json();
 
-    card.innerHTML=`
-    <h3>${teamNames[team]}</h3>
-    <a href="${teamNews.Url}" target="_blank">${teamNews.Title}</a>
-    <p>${teamNews.Content ? teamNews.Content.substring(0,120) + "..." : ""}</p>
-    `;
+if(data && data.length>0){
+
+card.innerHTML=`
+<h3>${teamNames[team]}</h3>
+<a href="${data[0].Url}" target="_blank">${data[0].Title}</a>
+<p>${data[0].Content.substring(0,120)}...</p>
+`;
+
 }else{
 
-    card.innerHTML=`
-    <h3>${teamNames[team]}</h3>
-    <p>No recent headline.</p>
-    `;
+card.innerHTML=`
+<h3>${teamNames[team]}</h3>
+<p>No news available.</p>
+`;
 
 }
 
-grid.appendChild(card);
+}catch{
+
+card.innerHTML=`
+<h3>${teamNames[team]}</h3>
+<p>Could not load news.</p>
+`;
+
+}
 
 }
 

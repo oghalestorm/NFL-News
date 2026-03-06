@@ -9,8 +9,8 @@ body{
 font-family:Arial;
 background:#0f172a;
 color:white;
-margin:0;
 text-align:center;
+margin:0;
 }
 
 h1{
@@ -24,49 +24,44 @@ color:#cbd5f5;
 }
 
 .division{
-margin:30px;
-padding:20px;
-border-radius:10px;
+margin:40px 20px;
 }
 
 .division h2{
-margin-bottom:15px;
+text-align:left;
+margin-bottom:10px;
+border-bottom:2px solid #334155;
+padding-bottom:5px;
 }
 
-.teams{
+.teamGrid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:15px;
+gap:18px;
 }
 
 .team{
 background:#1e293b;
 padding:15px;
 border-radius:10px;
-transition:0.2s;
+border-top:6px solid white;
+text-align:left;
 }
 
-.team:hover{
-transform:translateY(-5px);
+.team h3{
+margin-top:0;
+margin-bottom:10px;
 }
 
 .team a{
 color:#60a5fa;
-font-weight:bold;
 text-decoration:none;
+font-weight:bold;
 }
 
-/* division colors */
-
-.afcEast{background:#1e3a8a;}
-.afcNorth{background:#7f1d1d;}
-.afcSouth{background:#134e4a;}
-.afcWest{background:#78350f;}
-
-.nfcEast{background:#312e81;}
-.nfcNorth{background:#166534;}
-.nfcSouth{background:#9f1239;}
-.nfcWest{background:#0f766e;}
+.team a:hover{
+text-decoration:underline;
+}
 
 </style>
 </head>
@@ -76,20 +71,17 @@ text-decoration:none;
 <h1>NFL Latest Team News</h1>
 <div id="updateTime"></div>
 
-<div id="dashboard"></div>
+<div id="teams"></div>
 
 <script>
 
 const apiKey="1aac3916c7694b6c8a1773a059a4aaf5";
-
-/* divisions */
 
 const divisions={
 "AFC East":["BUF","MIA","NE","NYJ"],
 "AFC North":["BAL","CIN","CLE","PIT"],
 "AFC South":["HOU","IND","JAX","TEN"],
 "AFC West":["DEN","KC","LV","LAC"],
-
 "NFC East":["DAL","NYG","PHI","WAS"],
 "NFC North":["CHI","DET","GB","MIN"],
 "NFC South":["ATL","CAR","NO","TB"],
@@ -131,44 +123,76 @@ TEN:"Tennessee Titans",
 WAS:"Washington Commanders"
 };
 
-const dashboard=document.getElementById("dashboard");
+const teamColors={
+ARI:"#97233F",
+ATL:"#A71930",
+BAL:"#241773",
+BUF:"#00338D",
+CAR:"#0085CA",
+CHI:"#0B162A",
+CIN:"#FB4F14",
+CLE:"#311D00",
+DAL:"#003594",
+DEN:"#FB4F14",
+DET:"#0076B6",
+GB:"#203731",
+HOU:"#03202F",
+IND:"#002C5F",
+JAX:"#006778",
+KC:"#E31837",
+LV:"#000000",
+LAC:"#0080C6",
+LAR:"#003594",
+MIA:"#008E97",
+MIN:"#4F2683",
+NE:"#002244",
+NO:"#D3BC8D",
+NYG:"#0B2265",
+NYJ:"#125740",
+PHI:"#004C54",
+PIT:"#FFB612",
+SF:"#AA0000",
+SEA:"#002244",
+TB:"#D50A0A",
+TEN:"#4B92DB",
+WAS:"#5A1414"
+};
+
+const container=document.getElementById("teams");
 
 async function loadNews(){
 
-dashboard.innerHTML="";
-
-/* build division layout first */
+container.innerHTML="";
 
 for(const division in divisions){
 
-const section=document.createElement("div");
+const divBlock=document.createElement("div");
+divBlock.className="division";
 
-const className=division.replace(" ","");
-section.className="division "+className.charAt(0).toLowerCase()+className.slice(1);
+divBlock.innerHTML=`<h2>${division}</h2>`;
 
-section.innerHTML=`<h2>${division}</h2><div class="teams" id="${division.replace(" ","")}"></div>`;
+const grid=document.createElement("div");
+grid.className="teamGrid";
 
-dashboard.appendChild(section);
+const teams=divisions[division].sort();
 
-}
-
-/* load teams */
-
-for(const division in divisions){
-
-for(const team of divisions[division]){
-
-const container=document.getElementById(division.replace(" ",""));
+for(const team of teams){
 
 const card=document.createElement("div");
 card.className="team";
+card.style.borderTopColor=teamColors[team];
 
-card.innerHTML=`<h3>${teamNames[team]}</h3><p>Loading...</p>`;
-container.appendChild(card);
+card.innerHTML=`
+<h3>${teamNames[team]}</h3>
+<p>Loading...</p>
+`;
+
+grid.appendChild(card);
 
 try{
 
 const response=await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/NewsByTeam/${team}?key=${apiKey}`);
+
 const data=await response.json();
 
 if(data && data.length>0){
@@ -188,16 +212,19 @@ card.innerHTML=`
 
 }
 
-}catch{
+}catch(error){
 
 card.innerHTML=`
 <h3>${teamNames[team]}</h3>
-<p>Error loading news</p>
+<p>Could not load news.</p>
 `;
 
 }
 
 }
+
+divBlock.appendChild(grid);
+container.appendChild(divBlock);
 
 }
 

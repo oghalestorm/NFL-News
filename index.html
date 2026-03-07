@@ -174,9 +174,15 @@ const card=document.createElement("div");
 card.className="team";
 card.style.borderTopColor=teamColors[team];
 
-const teamArticle=news.find(article =>
-article.Teams && article.Teams.includes(team)
-);
+const teamArticle=news.find(article => {
+
+if(!article.Teams) return false;
+
+const teamsList = article.Teams.replace(",", " ").split(" ");
+
+return teamsList.includes(team);
+
+});
 
 if(teamArticle){
 

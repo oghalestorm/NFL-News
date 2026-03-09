@@ -80,7 +80,9 @@ text-decoration:none;
 
 <script>
 
-const apiKey="1aac3916c7694b6c8a1773a059a4aaf5";
+const apiKey="YOUR_SPORTSDATA_KEY_HERE";
+
+/* DIVISIONS */
 
 const divisions={
 "AFC East":["BUF","MIA","NE","NYJ"],
@@ -92,6 +94,8 @@ const divisions={
 "NFC South":["ATL","CAR","NO","TB"],
 "NFC West":["ARI","LAR","SF","SEA"]
 };
+
+/* TEAM NAMES */
 
 const teamNames={
 ARI:"Arizona Cardinals",
@@ -128,42 +132,20 @@ TEN:"Tennessee Titans",
 WAS:"Washington Commanders"
 };
 
+/* TEAM COLORS */
+
 const teamColors={
-ARI:"#97233F",
-ATL:"#A71930",
-BAL:"#241773",
-BUF:"#00338D",
-CAR:"#0085CA",
-CHI:"#0B162A",
-CIN:"#FB4F14",
-CLE:"#311D00",
-DAL:"#003594",
-DEN:"#FB4F14",
-DET:"#0076B6",
-GB:"#203731",
-HOU:"#03202F",
-IND:"#002C5F",
-JAX:"#006778",
-KC:"#E31837",
-LV:"#000000",
-LAC:"#0080C6",
-LAR:"#003594",
-MIA:"#008E97",
-MIN:"#4F2683",
-NE:"#002244",
-NO:"#D3BC8D",
-NYG:"#0B2265",
-NYJ:"#125740",
-PHI:"#004C54",
-PIT:"#FFB612",
-SF:"#AA0000",
-SEA:"#002244",
-TB:"#D50A0A",
-TEN:"#4B92DB",
-WAS:"#5A1414"
+ARI:"#97233F", ATL:"#A71930", BAL:"#241773", BUF:"#00338D",
+CAR:"#0085CA", CHI:"#0B162A", CIN:"#FB4F14", CLE:"#311D00",
+DAL:"#003594", DEN:"#FB4F14", DET:"#0076B6", GB:"#203731",
+HOU:"#03202F", IND:"#002C5F", JAX:"#006778", KC:"#E31837",
+LV:"#000000", LAC:"#0080C6", LAR:"#003594", MIA:"#008E97",
+MIN:"#4F2683", NE:"#002244", NO:"#D3BC8D", NYG:"#0B2265",
+NYJ:"#125740", PHI:"#004C54", PIT:"#FFB612", SF:"#AA0000",
+SEA:"#002244", TB:"#D50A0A", TEN:"#4B92DB", WAS:"#5A1414"
 };
 
-/* ESPN logo CDN */
+/* TEAM LOGOS */
 
 const logos={
 ARI:"https://a.espncdn.com/i/teamlogos/nfl/500/ari.png",
@@ -202,6 +184,62 @@ WAS:"https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png"
 
 const container=document.getElementById("teams");
 
+/* ESPN NEWS */
+
+async function getESPNNews(teamName){
+
+try{
+
+const response=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://www.espn.com/espn/rss/nfl/news");
+const data=await response.json();
+
+for(const article of data.items){
+
+const text=(article.title+" "+article.description).toLowerCase();
+
+if(text.includes(teamName.split(" ")[1].toLowerCase())){
+return {
+title:article.title,
+url:article.link,
+content:article.description
+};
+}
+
+}
+
+}catch(e){}
+
+return null;
+
+}
+
+/* SPORTSDATA FALLBACK */
+
+async function getSportsDataNews(team){
+
+try{
+
+const response=await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/NewsByTeam/${team}?key=${apiKey}`);
+const data=await response.json();
+
+if(data && data.length>0){
+
+return{
+title:data[0].Title,
+url:data[0].Url,
+content:data[0].Content
+};
+
+}
+
+}catch(e){}
+
+return null;
+
+}
+
+/* MAIN LOADER */
+
 async function loadNews(){
 
 container.innerHTML="";
@@ -223,32 +261,23 @@ const card=document.createElement("div");
 card.className="team";
 card.style.borderTopColor=teamColors[team];
 
-card.innerHTML=`
-<div class="teamHeader">
-<img class="logo" src="${logos[team]}">
-<h3>${teamNames[team]}</h3>
-</div>
-<p>Loading...</p>
-`;
-
 grid.appendChild(card);
 
-try{
+let article=await getESPNNews(teamNames[team]);
 
-const response=await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/NewsByTeam/${team}?key=${apiKey}`);
-const data=await response.json();
+if(!article){
+article=await getSportsDataNews(team);
+}
 
-if(data && data.length>0){
-
-const article=data[0];
+if(article){
 
 card.innerHTML=`
 <div class="teamHeader">
 <img class="logo" src="${logos[team]}">
 <h3>${teamNames[team]}</h3>
 </div>
-<a href="${article.Url}" target="_blank">${article.Title}</a>
-<p>${article.Content ? article.Content.substring(0,120)+"..." : ""}</p>
+<a href="${article.url}" target="_blank">${article.title}</a>
+<p>${article.content ? article.content.substring(0,120)+"..." : ""}</p>
 `;
 
 }else{
@@ -258,19 +287,7 @@ card.innerHTML=`
 <img class="logo" src="${logos[team]}">
 <h3>${teamNames[team]}</h3>
 </div>
-<p>No news available.</p>
-`;
-
-}
-
-}catch{
-
-card.innerHTML=`
-<div class="teamHeader">
-<img class="logo" src="${logos[team]}">
-<h3>${teamNames[team]}</h3>
-</div>
-<p>Could not load news.</p>
+<p>No recent headline.</p>
 `;
 
 }
@@ -282,8 +299,7 @@ container.appendChild(divBlock);
 
 }
 
-document.getElementById("updateTime").innerText=
-"Last updated: "+new Date().toLocaleTimeString();
+document.getElementById("updateTime").innerText="Last updated: "+new Date().toLocaleTimeString();
 
 }
 

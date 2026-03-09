@@ -277,7 +277,7 @@ card.innerHTML=`
 <h3>${teamNames[team]}</h3>
 </div>
 <a href="${article.url}" target="_blank">${article.title}</a>
-<p>${article.content ? article.content.substring(0,120)+"..." : ""}</p>
+<p>${summarize(article.content)}</p>
 `;
 
 }else{
@@ -302,7 +302,25 @@ container.appendChild(divBlock);
 document.getElementById("updateTime").innerText="Last updated: "+new Date().toLocaleTimeString();
 
 }
+function summarize(text, maxLength=140){
 
+if(!text) return "";
+
+const clean=text.replace(/<[^>]*>/g,""); // remove HTML tags
+
+if(clean.length<=maxLength) return clean;
+
+let shortened=clean.substring(0,maxLength);
+
+const lastPeriod=shortened.lastIndexOf(".");
+const lastSpace=shortened.lastIndexOf(" ");
+
+if(lastPeriod>80){
+return shortened.substring(0,lastPeriod+1);
+}
+
+return shortened.substring(0,lastSpace)+"...";
+}
 loadNews();
 setInterval(loadNews,1800000);
 
